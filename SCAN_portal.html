@@ -160,6 +160,19 @@
       animation: fadeIn 0.3s ease;
     }
     .result-card:last-of-type { margin-bottom: 0; }
+    .btn-map {
+      display: block; margin-top: 12px;
+      padding: 11px;
+      background: linear-gradient(135deg, #0d9488, #14b8a6);
+      color: var(--white);
+      border-radius: 10px;
+      text-align: center;
+      font-size: 0.88rem; font-weight: 700;
+      text-decoration: none;
+      letter-spacing: 0.02em;
+      transition: opacity 0.2s;
+    }
+    .btn-map:active { opacity: 0.85; }
     @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
     .result-name {
       font-size: 1rem; font-weight: 700;
@@ -362,6 +375,9 @@
               <span class="result-value">${s.room}</span>
             </div>
           </div>
+          <a href="https://108929iyes.github.io/website/school-map.html" target="_blank" class="btn-map">
+            🗺️ View School Map
+          </a>
         </div>`;
     }).join('');
     showModal();
