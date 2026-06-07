@@ -47,16 +47,14 @@
     .scan-big {
       font-size: 3rem; font-weight: 900;
       color: var(--blue-dark);
-      letter-spacing: 0.08em;
-      line-height: 1;
+      letter-spacing: 0.08em; line-height: 1;
       margin-top: 6px;
     }
     .scan-subtitle {
       font-size: 0.72rem; font-weight: 600;
       color: var(--blue-mid);
       text-align: center; letter-spacing: 0.04em;
-      text-transform: uppercase;
-      margin-top: 2px;
+      text-transform: uppercase; margin-top: 2px;
     }
     main {
       width: 100%; max-width: 480px;
@@ -108,16 +106,61 @@
       width: 8px; height: 8px;
       background: #7dd3fc; border-radius: 50%; display: inline-block;
     }
-    #results { margin-top: 24px; display: flex; flex-direction: column; gap: 14px; }
-    .result-card {
+
+    /* MODAL OVERLAY */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(10, 25, 70, 0.55);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      backdrop-filter: blur(2px);
+    }
+    .modal-overlay.active {
+      display: flex;
+    }
+    .modal-box {
       background: var(--white);
       border-radius: var(--radius);
-      box-shadow: var(--shadow);
+      box-shadow: 0 8px 40px rgba(26,58,143,0.25);
+      width: 100%;
+      max-width: 420px;
+      max-height: 85vh;
+      overflow-y: auto;
+      animation: popIn 0.25s ease;
+    }
+    @keyframes popIn {
+      from { opacity:0; transform: scale(0.92) translateY(20px); }
+      to { opacity:1; transform: scale(1) translateY(0); }
+    }
+    .modal-header {
+      background: linear-gradient(135deg, var(--blue-dark), var(--blue-mid));
+      padding: 16px 20px;
+      border-radius: var(--radius) var(--radius) 0 0;
+      text-align: center;
+    }
+    .modal-header-title {
+      font-size: 0.75rem; font-weight: 700;
+      color: rgba(255,255,255,0.8);
+      text-transform: uppercase; letter-spacing: 0.08em;
+    }
+    .modal-body { padding: 20px; }
+
+    /* Result cards inside modal */
+    .result-card {
       border-left: 5px solid var(--blue-mid);
-      padding: 18px 16px;
+      border-radius: 10px;
+      background: var(--gray-light);
+      padding: 16px;
+      margin-bottom: 14px;
       animation: fadeIn 0.3s ease;
     }
-    @keyframes fadeIn { from { opacity:0; transform: translateY(8px); } to { opacity:1; transform: translateY(0); } }
+    .result-card:last-of-type { margin-bottom: 0; }
+    @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
     .result-name {
       font-size: 1rem; font-weight: 700;
       color: var(--blue-dark); margin-bottom: 12px; line-height: 1.3;
@@ -133,9 +176,14 @@
       font-size: 0.88rem; font-weight: 600;
       color: #1f2937; word-break: break-word;
     }
-    .btn-row { display: flex; gap: 10px; margin-top: 16px; }
+
+    .modal-footer {
+      padding: 16px 20px;
+      border-top: 1px solid var(--border);
+      display: flex; gap: 10px;
+    }
     .btn-secondary {
-      flex: 1; padding: 12px;
+      flex: 1; padding: 13px;
       border-radius: 10px;
       font-family: 'Poppins', sans-serif;
       font-size: 0.88rem; font-weight: 700;
@@ -153,20 +201,16 @@
       color: var(--blue-dark);
       border: 1.5px solid var(--border) !important;
     }
-    .no-result {
-      background: var(--white);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding: 24px 20px;
-      text-align: center; color: var(--gray);
-      font-size: 0.9rem; font-weight: 500;
+
+    /* No result modal */
+    .no-result-modal {
+      text-align: center; padding: 10px 0 6px;
     }
-    .no-result .icon { font-size: 2rem; margin-bottom: 8px; }
-    .no-result .btn-row { justify-content: center; }
-    .loading {
-      text-align: center; color: var(--blue-mid);
-      font-size: 0.9rem; padding: 20px 0; font-weight: 500;
+    .no-result-modal .icon { font-size: 2.5rem; margin-bottom: 10px; }
+    .no-result-modal p {
+      color: var(--gray); font-size: 0.9rem; font-weight: 500; line-height: 1.5;
     }
+
     footer {
       width: 100%;
       background: linear-gradient(90deg, var(--blue-dark), var(--blue-mid));
@@ -188,7 +232,7 @@
 </header>
 
 <main>
-  <div class="card" id="searchCard">
+  <div class="card">
     <div class="card-title">Search Student Section</div>
     <div class="input-group">
       <input type="text" id="firstName" placeholder="First Name" autocomplete="off" />
@@ -198,12 +242,25 @@
       <span class="dot"></span> Search
     </button>
   </div>
-  <div id="results"></div>
 </main>
 
 <footer>
   Copyright &copy; June 2026 <strong>ALI VILLAVERDE TELADA</strong>
 </footer>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="handleOverlayClick(event)">
+  <div class="modal-box" id="modalBox">
+    <div class="modal-header">
+      <div class="modal-header-title" id="modalHeaderTitle">Search Result</div>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-footer">
+      <button class="btn-secondary btn-search-another" onclick="searchAnother()">Search Another</button>
+      <button class="btn-secondary btn-close" onclick="closeModal()">Close</button>
+    </div>
+  </div>
+</div>
 
 <script>
   const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQKF4GRCiTnVK3dLhSc5cJYPWnHmE0wTusfn0uxfhnnkOCd_AeR0NHXGWOW6LZJMMjDm1-BF_1CWXYh/pub?gid=0&single=true&output=csv';
@@ -240,18 +297,28 @@
   function normalize(str) { return str.toLowerCase().trim().replace(/\s+/g, ' '); }
   function toProperCase(str) { return str.toLowerCase().replace(/\b\w/g, c => c.toUpperCase()); }
 
+  function showModal() { document.getElementById('modalOverlay').classList.add('active'); }
+  function closeModal() { document.getElementById('modalOverlay').classList.remove('active'); }
+
+  function handleOverlayClick(e) {
+    if (e.target === document.getElementById('modalOverlay')) closeModal();
+  }
+
   function searchStudent() {
     const fn = normalize(document.getElementById('firstName').value);
     const ln = normalize(document.getElementById('lastName').value);
-    const resultsDiv = document.getElementById('results');
 
     if (!fn && !ln) {
-      resultsDiv.innerHTML = `<div class="no-result"><div class="icon">⚠️</div><p>Please enter a first name or last name.</p><div class="btn-row"><button class="btn-secondary btn-close" onclick="closeResults()">Close</button></div></div>`;
+      document.getElementById('modalHeaderTitle').textContent = 'No Input';
+      document.getElementById('modalBody').innerHTML = `<div class="no-result-modal"><div class="icon">⚠️</div><p>Please enter a first name or last name.</p></div>`;
+      showModal();
       return;
     }
 
     if (studentsData.length === 0) {
-      resultsDiv.innerHTML = '<div class="loading">⏳ Loading data, please try again...</div>';
+      document.getElementById('modalHeaderTitle').textContent = 'Loading...';
+      document.getElementById('modalBody').innerHTML = `<div class="no-result-modal"><div class="icon">⏳</div><p>Data is loading. Please try again.</p></div>`;
+      showModal();
       loadData();
       return;
     }
@@ -265,19 +332,14 @@
     });
 
     if (matches.length === 0) {
-      resultsDiv.innerHTML = `
-        <div class="no-result">
-          <div class="icon">🔍</div>
-          <p>No student found.<br>Please check the name and try again.</p>
-          <div class="btn-row">
-            <button class="btn-secondary btn-search-another" onclick="searchAnother()">Search Another</button>
-            <button class="btn-secondary btn-close" onclick="closeResults()">Close</button>
-          </div>
-        </div>`;
+      document.getElementById('modalHeaderTitle').textContent = 'Not Found';
+      document.getElementById('modalBody').innerHTML = `<div class="no-result-modal"><div class="icon">🔍</div><p>No student found.<br>Please check the name and try again.</p></div>`;
+      showModal();
       return;
     }
 
-    resultsDiv.innerHTML = matches.map(s => {
+    document.getElementById('modalHeaderTitle').textContent = matches.length === 1 ? 'Student Found' : `${matches.length} Students Found`;
+    document.getElementById('modalBody').innerHTML = matches.map(s => {
       const fullName = toProperCase(`${s.first_name} ${s.middle_name ? s.middle_name + ' ' : ''}${s.last_name}`);
       return `
         <div class="result-card">
@@ -300,26 +362,16 @@
               <span class="result-value">${s.room}</span>
             </div>
           </div>
-          <div class="btn-row">
-            <button class="btn-secondary btn-search-another" onclick="searchAnother()">Search Another</button>
-            <button class="btn-secondary btn-close" onclick="closeResults()">Close</button>
-          </div>
         </div>`;
     }).join('');
-
-    resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    showModal();
   }
 
   function searchAnother() {
+    closeModal();
     document.getElementById('firstName').value = '';
     document.getElementById('lastName').value = '';
-    document.getElementById('results').innerHTML = '';
     document.getElementById('firstName').focus();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
-  function closeResults() {
-    document.getElementById('results').innerHTML = '';
   }
 
   document.addEventListener('keydown', e => { if (e.key === 'Enter') searchStudent(); });
