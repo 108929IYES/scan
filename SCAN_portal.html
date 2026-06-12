@@ -201,6 +201,7 @@
 <script>
   const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQKF4GRCiTnVK3dLhSc5cJYPWnHmE0wTusfn0uxfhnnkOCd_AeR0NHXGWOW6LZJMMjDm1-BF_1CWXYh/pub?gid=0&single=true&output=csv';
   const ROOM_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQz24qU-yFBFqNRV_CaRGKL92rLLp_M-mBnw9qkC1IMJR5DoF7MZ-RNkDbM3Ut60C56VzTVte04DFP7/pub?gid=0&single=true&output=csv';
+  const SETTINGS_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQKF4GRCiTnVK3dLhSc5cJYPWnHmE0wTusfn0uxfhnnkOCd_AeR0NHXGWOW6LZJMMjDm1-BF_1CWXYh/pub?gid=72955027&single=true&output=csv';
 
   const ROOM_COORDS = {
     1:[42.5,77.0],2:[40.5,71.5],3:[52.0,65.0],4:[57.0,55.0],5:[59.5,61.0],
@@ -215,6 +216,21 @@
 
   let studentsData = [];
   let roomData = {};
+  let settings = { status: 'open', school_year: '', available_date: '' };
+
+  async function loadSettings() {
+    try {
+      const res = await fetch(SETTINGS_CSV);
+      const text = await res.text();
+      const rows = text.trim().split('\n').slice(1);
+      rows.forEach(row => {
+        const cols = parseCSVRow(row);
+        const key = (cols[0] || '').trim().replace(/\r/g, '');
+        const val = (cols[1] || '').trim().replace(/\r/g, '');
+        if (key) settings[key] = val;
+      });
+    } catch(e) { console.error('Failed to load settings', e); }
+  }
 
   async function loadData() {
     try {
@@ -333,6 +349,14 @@
       document.getElementById('modalBody').innerHTML=`<div class="no-result-modal"><div class="icon">⚠️</div><p>Please enter a first name or last name.</p></div>`;
       showModal(); return;
     }
+
+    // Check settings status
+    if(settings.status === 'close') {
+      document.getElementById('modalHeaderTitle').textContent='Not Yet Available';
+      document.getElementById('modalBody').innerHTML=`<div class="no-result-modal"><div class="icon">🕐</div><p>We are still finalizing the list of pupils for School Year <strong>${settings.school_year}</strong>. Please check back on <strong>${settings.available_date}</strong>.</p></div>`;
+      showModal(); return;
+    }
+
     if(studentsData.length===0) {
       document.getElementById('modalHeaderTitle').textContent='Loading...';
       document.getElementById('modalBody').innerHTML=`<div class="no-result-modal"><div class="icon">⏳</div><p>Data is loading. Please try again.</p></div>`;
@@ -359,6 +383,7 @@
         <div class="result-card">
           <div class="result-name">👤 ${fullName}</div>
           <div class="result-grid">
+            <div class="result-item full"><span class="result-label">School Year</span><span class="result-value">SY ${settings.school_year}</span></div>
             <div class="result-item"><span class="result-label">Grade</span><span class="result-value">Grade ${s.grade}</span></div>
             <div class="result-item"><span class="result-label">Section</span><span class="result-value">${toProperCase(s.section)}</span></div>
             <div class="result-item full"><span class="result-label">Adviser</span><span class="result-value">${toProperCase(s.teacher)}</span></div>
@@ -388,6 +413,7 @@
   }
 
   document.addEventListener('keydown', e=>{ if(e.key==='Enter') searchStudent(); });
+  loadSettings();
   loadData();
   loadRoomData();
 </script>
