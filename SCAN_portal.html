@@ -344,9 +344,9 @@
     const fn = normalize(document.getElementById('firstName').value);
     const ln = normalize(document.getElementById('lastName').value);
 
-    if(!fn && !ln) {
-      document.getElementById('modalHeaderTitle').textContent='No Input';
-      document.getElementById('modalBody').innerHTML=`<div class="no-result-modal"><div class="icon">⚠️</div><p>Please enter a first name or last name.</p></div>`;
+    if(!fn || !ln) {
+      document.getElementById('modalHeaderTitle').textContent='Incomplete Information';
+      document.getElementById('modalBody').innerHTML=`<div class="no-result-modal"><div class="icon">⚠️</div><p>Please enter both First Name and Last Name to search.</p></div>`;
       showModal(); return;
     }
 
@@ -365,12 +365,12 @@
 
     const matches = studentsData.filter(s => {
       const sfn=normalize(s.first_name||''); const sln=normalize(s.last_name||'');
-      return(!fn||sfn.includes(fn))&&(!ln||sln.includes(ln));
+      return sfn === fn && sln === ln;
     });
 
     if(matches.length===0) {
       document.getElementById('modalHeaderTitle').textContent='Not Found';
-      document.getElementById('modalBody').innerHTML=`<div class="no-result-modal"><div class="icon">🔍</div><p>No student found.<br>Please check the name and try again.</p></div>`;
+      document.getElementById('modalBody').innerHTML=`<div class="no-result-modal"><div class="icon">🔍</div><p>No student found.<br>Please double check the spelling of the First Name and Last Name.</p></div>`;
       showModal(); return;
     }
 
